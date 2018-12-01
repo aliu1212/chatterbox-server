@@ -11,7 +11,8 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
-var results = [];
+var store = {};
+store.results = [];
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -32,63 +33,83 @@ var requestHandler = function(request, response) {
   var headers = defaultCorsHeaders;
   headers['Content-Type'] = 'application/JSON';
   
-  if (request.method === 'GET' && request.url === '/classes/messages'){
-    
-    response.writeHead(statusCode, headers);
-    var jsonStr = JSON.stringify(response);
-    // console.log(jsonStr);
-    response.end(jsonStr);
-  } else if (request.method === 'POST' && request.url === '/classes/messages') {
-    statusCode = 201;
-
-
-    var chunker = function (cb) {
-      var body = '';
-      request.on('data', function(data){
+  if (request.method === 'GET') {
+    if (request.url === '/classes/messages') {
+      response.writeHead(statusCode, headers);
+      var jsonStr = JSON.stringify(store);
+      // console.log(jsonStr);
+      response.end(jsonStr);
+    } else {
+      console.log('we made it to the 404 block')
+      statusCode = 404;
+      response.writeHead(statusCode, headers);
+      response.end(statusCode);
+    }
+  } else if (request.method === 'POST'){
+      if (request.url === '/classes/messages') {
+        statusCode = 201;
+        var body = '';
+        request.on('data', function(data){
         body += data;
-      });
-
-      request.on('end', function() {
-        cb(JSON.parse(body));
-      })
-    }
-
-    chunker(function(body) {
-      results.push(body);
-      console.log('parsed body', body);
-      response.writeHead(statusCode, headers, body);
-      console.log('response', response);
-      response.end(body);
-    })
-
-  }
-    /************
-    var function chunker(){
-      var parsedBody;
-      var body = '';
-     request.on('data', function(data){
-      body += data;
-    });
-    }
-    var parsedBody;
-    var body = '';
-    request.on('data', function(data){
-      body += data;
-    });
-
-    request.on('end', function() {
-      parsedBody = JSON.parse(body);
-      // callBack(null, parsedBody);
-      console.log('PARSED', parsedBody);
-    })
-    response.writeHead(statusCode, headers, parsedBody);
-    
-    console.log('RESPONSE: ', response);
-    // response.end(parsedBody);
-    response.end(parsedBody);
+        }).on('end', function(){
+        store.results.push(JSON.parse(body));
+        response.writeHead(statusCode, headers);
+        response.end(body);
+        })
+      } else {
+        console.log('we made it to the 404 block')
+        statusCode = 404;
+        response.writeHead(statusCode, headers);
+        response.end(statusCode);
+      }
     
   }
-    ***** */
+    // var chunker = function (cb) {
+    //   var body = '';
+    //   request.on('data', function(data){
+    //     body += data;
+    //   });
+
+    //   request.on('end', function() {
+    //     cb(JSON.parse(body));
+    //   })
+    // }
+
+    // chunker(function(body) {
+    //   results.push(body);
+    //   console.log('parsed body', body);
+    //   response.writeHead(statusCode, headers, body);
+    //   console.log('response', response);
+    //   response.end(body);
+    // })
+
+  // }
+    // var function chunker(){
+    //   var parsedBody;
+    //   var body = '';
+    //  request.on('data', function(data){
+    //   body += data;
+    // });
+    // }
+  //   var parsedBody;
+  //   var body = '';
+  //   request.on('data', function(data){
+  //     body += data;
+  //   });
+
+  //   request.on('end', function() {
+  //     parsedBody = JSON.parse(body);
+  //     // callBack(null, parsedBody);
+  //     console.log('PARSED', parsedBody);
+  //   })
+  //   response.writeHead(statusCode, headers, parsedBody);
+    
+  //   console.log('RESPONSE: ', response);
+  //   // response.end(parsedBody);
+  //   response.end(parsedBody);
+    
+  // }
+    
 
 
   // } else if (request.method === 'PUT') {
