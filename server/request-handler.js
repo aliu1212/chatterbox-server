@@ -37,32 +37,32 @@ var requestHandler = function(request, response) {
     if (request.url === '/classes/messages') {
       response.writeHead(statusCode, headers);
       var jsonStr = JSON.stringify(store);
-      // console.log(jsonStr);
-      response.end(jsonStr);
+      response.end(jsonStr, statusCode);
     } else {
-      console.log('we made it to the 404 block')
       statusCode = 404;
       response.writeHead(statusCode, headers);
-      response.end(statusCode);
+      response.end();
     }
   } else if (request.method === 'POST'){
       if (request.url === '/classes/messages') {
         statusCode = 201;
         var body = '';
         request.on('data', function(data){
-        body += data;
+          body += data;
         }).on('end', function(){
-        store.results.push(JSON.parse(body));
-        response.writeHead(statusCode, headers);
-        response.end(body);
+          store.results.push(JSON.parse(body));
+          response.writeHead(statusCode, headers);
+          response.end(body);
         })
       } else {
-        console.log('we made it to the 404 block')
         statusCode = 404;
         response.writeHead(statusCode, headers);
-        response.end(statusCode);
+        response.end();
       }
-    
+  } else {
+    statusCode = 404;
+    response.writeHead(statusCode, headers);
+    response.end();
   }
     // var chunker = function (cb) {
     //   var body = '';
