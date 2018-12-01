@@ -11,7 +11,7 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
-
+var results = [];
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -28,25 +28,77 @@ var requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
-
-  if (request.method === 'GET' /*&& request.url === './echo'*/){
-    var statusCode = 200;
-    var headers = defaultCorsHeaders;
-    response.results = [];
-    headers['Content-Type'] = 'application/JSON';
+  var statusCode = 200;
+  var headers = defaultCorsHeaders;
+  headers['Content-Type'] = 'application/JSON';
+  
+  if (request.method === 'GET' && request.url === '/classes/messages'){
+    
     response.writeHead(statusCode, headers);
     var jsonStr = JSON.stringify(response);
+    // console.log(jsonStr);
     response.end(jsonStr);
-  } else if (request.method === 'POST') {
-    
-  } else if (request.method === 'PUT') {
-    
-  } else if (request.method === 'DELETE') {
+  } else if (request.method === 'POST' && request.url === '/classes/messages') {
+    statusCode = 201;
 
-  } else if (request.method === 'OPTIONS') {
+
+    var chunker = function (cb) {
+      var body = '';
+      request.on('data', function(data){
+        body += data;
+      });
+
+      request.on('end', function() {
+        cb(JSON.parse(body));
+      })
+    }
+
+    chunker(function(body) {
+      results.push(body);
+      console.log('parsed body', body);
+      response.writeHead(statusCode, headers, body);
+      console.log('response', response);
+      response.end(body);
+    })
+
+  }
+    /************
+    var function chunker(){
+      var parsedBody;
+      var body = '';
+     request.on('data', function(data){
+      body += data;
+    });
+    }
+    var parsedBody;
+    var body = '';
+    request.on('data', function(data){
+      body += data;
+    });
+
+    request.on('end', function() {
+      parsedBody = JSON.parse(body);
+      // callBack(null, parsedBody);
+      console.log('PARSED', parsedBody);
+    })
+    response.writeHead(statusCode, headers, parsedBody);
     
-  } else {
-    response.end("ERROR");
+    console.log('RESPONSE: ', response);
+    // response.end(parsedBody);
+    response.end(parsedBody);
+    
+  }
+    ***** */
+
+
+  // } else if (request.method === 'PUT') {
+    
+  // } else if (request.method === 'DELETE') {
+
+  // } else if (request.method === 'OPTIONS') {
+    
+  // } else {
+    // response.end("ERROR");
   }
 
   // // The outgoing status.
@@ -73,7 +125,7 @@ var requestHandler = function(request, response) {
   // // Calling .end "flushes" the response's internal buffer, forcing
   // // node to actually send all the data over to the client.
   // response.end('Hello, World!');
-};
+//};
 
 module.exports.requestHandler = requestHandler;
 
